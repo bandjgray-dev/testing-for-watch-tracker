@@ -176,10 +176,10 @@
                 <h2 id="detTitle" class="text-lg font-bold text-white tracking-wide"></h2>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs">
+            <!-- Top Grid: Est Value & Purchase Price -->
+            <div id="detValGrid" class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs">
                 <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Estimated Value</span><span id="detVal" class="text-emerald-400 font-bold text-sm"></span></div>
-                <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Movement</span><span id="detMovement" class="text-slate-200 font-medium"></span></div>
-                <div class="col-span-2 pt-1 border-t border-slate-900"><span class="text-slate-500 block uppercase text-[9px] font-bold">Serial Number</span><span id="detSerial" class="text-slate-300 font-mono"></span></div>
+                <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Purchase Price</span><span id="detPurchase" class="text-slate-200 font-bold text-sm"></span></div>
             </div>
 
             <div id="detSpecsSection"></div>
@@ -436,9 +436,13 @@
             if (!w) return;
 
             document.getElementById('detTitle').innerText = (w.brand || '') + ' ' + (w.model || '');
-            document.getElementById('detVal').innerText = w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : 'N/A';
-            document.getElementById('detMovement').innerText = w.movementType || 'N/A';
-            document.getElementById('detSerial').innerText = w.serialNumber || 'N/A';
+            
+            // Top summary: Estimated Value & Purchase Price
+            var valStr = w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : 'N/A';
+            var purchaseStr = w.purchasePrice ? '$' + Number(w.purchasePrice).toLocaleString() : 'N/A';
+            
+            document.getElementById('detVal').innerText = valStr;
+            document.getElementById('detPurchase').innerText = purchaseStr;
             document.getElementById('detDesc').innerText = w.description || 'No notes provided.';
 
             var imgContainer = document.getElementById('detImagesContainer');
@@ -455,9 +459,12 @@
                 imgContainer.innerHTML = '<div class="text-xs text-slate-500 italic p-2">No images available</div>';
             }
 
+            // Additional Specs Section (Includes Movement & Serial Number)
             var specsBox = document.getElementById('detSpecsSection');
             specsBox.innerHTML = `
                 <div class="grid grid-cols-2 gap-2 text-xs text-slate-300 bg-slate-950 p-3 rounded-2xl border border-slate-800/80">
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Movement</span>${w.movementType || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Serial Number</span><span class="font-mono">${w.serialNumber || 'N/A'}</span></div>
                     <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Case Size</span>${w.caseSize || 'N/A'}</div>
                     <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Lug Width</span>${w.lugWidth || 'N/A'}</div>
                     <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Crystal</span>${w.crystalType || 'N/A'}</div>
@@ -515,7 +522,7 @@
         function executeShareText() {
             var w = watches.find(function(item) { return item.id === activeShareWatchId; });
             if (!w) return;
-            var text = `${w.brand} ${w.model}\nValue: $${w.currentValue}\nSerial: ${w.serialNumber}\nMovement: ${w.movementType}`;
+            var text = `${w.brand} ${w.model}\nEst Value: $${w.currentValue}\nPurchase Price: $${w.purchasePrice}\nSerial: ${w.serialNumber}\nMovement: ${w.movementType}`;
             if (navigator.share) {
                 navigator.share({ title: w.brand + ' ' + w.model, text: text });
             } else {
@@ -528,7 +535,7 @@
             var w = watches.find(function(item) { return item.id === activeShareWatchId; });
             if (!w) return;
             var subject = encodeURIComponent(`Watch Details: ${w.brand} ${w.model}`);
-            var body = encodeURIComponent(`Brand: ${w.brand}\nModel: ${w.model}\nSerial: ${w.serialNumber}\nEst Value: $${w.currentValue}\nCategory: ${w.category}\nCase Size: ${w.caseSize}\nNotes: ${w.description}`);
+            var body = encodeURIComponent(`Brand: ${w.brand}\nModel: ${w.model}\nSerial: ${w.serialNumber}\nEst Value: $${w.currentValue}\nPurchase Price: $${w.purchasePrice}\nCategory: ${w.category}\nCase Size: ${w.caseSize}\nNotes: ${w.description}`);
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
@@ -544,6 +551,7 @@
                     <hr>
                     <p><strong>Category:</strong> ${w.category}</p>
                     <p><strong>Estimated Value:</strong> $${w.currentValue}</p>
+                    <p><strong>Purchase Price:</strong> $${w.purchasePrice}</p>
                     <p><strong>Serial Number:</strong> ${w.serialNumber}</p>
                     <p><strong>Movement:</strong> ${w.movementType}</p>
                     <p><strong>Case Size:</strong> ${w.caseSize} | <strong>Lug Width:</strong> ${w.lugWidth}</p>
