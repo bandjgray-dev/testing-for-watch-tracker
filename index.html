@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Vault</title>
+    <title>Watch Vault Tracker</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -23,13 +24,19 @@
             </button>
         </header>
 
+        <!-- Search Bar -->
+        <div class="relative">
+            <input type="text" id="searchInput" oninput="renderWatches()" placeholder="Search brand, model, serial..." class="w-full bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-xs rounded-xl pl-9 pr-4 py-2.5 focus:outline-none focus:border-indigo-500">
+            <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
+        </div>
+
         <!-- Backup & Restore Bar -->
         <div class="grid grid-cols-2 gap-2">
-            <button onclick="exportBackup()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs py-2 rounded-xl text-center active:scale-95 transition-all">
-                📥 Export Backup
+            <button onclick="exportBackup()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs py-2 rounded-xl text-center active:scale-95 transition-all flex items-center justify-center gap-1">
+                <span>📥</span> Export Backup
             </button>
-            <button onclick="document.getElementById('importFile').click()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs py-2 rounded-xl text-center active:scale-95 transition-all">
-                📤 Restore Backup
+            <button onclick="document.getElementById('importFile').click()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs py-2 rounded-xl text-center active:scale-95 transition-all flex items-center justify-center gap-1">
+                <span>📤</span> Restore Backup
             </button>
             <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
         </div>
@@ -155,6 +162,7 @@
             </form>
         </div>
     </div>
+
     <!-- Expanded Detail Modal -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 text-slate-100 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
@@ -162,15 +170,12 @@
                 <button onclick="closeDetailModal()" class="bg-slate-800 text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">&times;</button>
             </div>
             
-            <!-- Image Carousel / Gallery -->
             <div id="detImagesContainer" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
 
-            <!-- Make & Model positioned above the value section -->
             <div>
                 <h2 id="detTitle" class="text-lg font-bold text-white tracking-wide"></h2>
             </div>
 
-            <!-- Specs Grid -->
             <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs">
                 <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Estimated Value</span><span id="detVal" class="text-emerald-400 font-bold text-sm"></span></div>
                 <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Movement</span><span id="detMovement" class="text-slate-200 font-medium"></span></div>
@@ -186,12 +191,12 @@
 
             <div class="flex gap-2 pt-2">
                 <button type="button" id="detEditBtn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs py-2.5 rounded-xl transition-all">Edit Watch</button>
-                <button type="button" id="detShareBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl transition-all">Share / PDF</button>
+                <button type="button" id="detShareBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl transition-all">Share / Export</button>
             </div>
         </div>
     </div>
 
-    <!-- Fullscreen Image Lightbox Modal -->
+    <!-- Fullscreen Lightbox Modal -->
     <div id="lightboxModal" class="hidden fixed inset-0 bg-black/95 z-[100] items-center justify-center p-2" onclick="closeLightbox()">
         <button class="absolute top-4 right-4 bg-slate-800 text-white w-10 h-10 rounded-full font-bold text-lg flex items-center justify-center shadow-lg">&times;</button>
         <img id="lightboxImg" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl">
@@ -205,7 +210,7 @@
             <div class="flex flex-col gap-2 pt-2">
                 <button type="button" onclick="executeShareText()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs py-2.5 rounded-xl">Share Text (SMS / App)</button>
                 <button type="button" onclick="executeEmailReport()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl">Email Details</button>
-                <button type="button" onclick="executeGeneratePDF()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs py-2.5 rounded-xl">Download PDF Report</button>
+                <button type="button" onclick="executeGeneratePDF()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs py-2.5 rounded-xl">Download Spec Sheet</button>
                 <button type="button" onclick="closeShareModal()" class="w-full bg-slate-950 text-slate-400 font-semibold text-xs py-2 rounded-xl mt-1">Cancel</button>
             </div>
         </div>
@@ -249,19 +254,9 @@
         var activeCategoryFilter = 'All';
         var activeShareWatchId = null;
 
-        function openModal() {
-            document.getElementById('modalTitle').innerText = 'Add Watch';
-            document.getElementById('watchId').value = '';
-            document.getElementById('watchForm').reset();
-            currentTempImages = [];
-            renderTempImagePreviews();
-            document.getElementById('watchModal').classList.remove('hidden');
-            document.getElementById('watchModal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('watchModal').classList.add('hidden');
-            document.getElementById('watchModal').classList.remove('flex');
+        function saveWatches() {
+            localStorage.setItem('watches_v15', JSON.stringify(watches));
+            renderWatches();
         }
 
         function setFilter(category, element) {
@@ -270,171 +265,142 @@
                 btn.className = 'filter-btn bg-slate-900 text-slate-400 hover:text-slate-200 text-xs font-semibold px-4 py-2 rounded-full whitespace-nowrap border border-slate-800 shadow-sm transition-all';
             });
             element.className = 'filter-btn active bg-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-full whitespace-nowrap border border-indigo-500 shadow-sm transition-all';
-            render();
+            renderWatches();
+        }
+        function renderWatches() {
+            var container = document.getElementById('watchList');
+            container.innerHTML = '';
+
+            var searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+            var filtered = watches.filter(function(w) {
+                var matchesCat = activeCategoryFilter === 'All' || w.category === activeCategoryFilter;
+                var matchesSearch = !searchVal || 
+                    (w.brand && w.brand.toLowerCase().includes(searchVal)) ||
+                    (w.model && w.model.toLowerCase().includes(searchVal)) ||
+                    (w.serialNumber && w.serialNumber.toLowerCase().includes(searchVal));
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800/50">
+                        <p class="text-slate-400 text-xs">No watches found</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach(function(w) {
+                var card = document.createElement('div');
+                card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md flex gap-4 cursor-pointer hover:border-slate-700 transition-all';
+                card.onclick = function() { openDetailModal(w.id); };
+
+                var imgUrl = (w.images && w.images.length > 0) ? w.images[0] : 'https://via.placeholder.com/100?text=Watch';
+                var valStr = w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : 'N/A';
+
+                card.innerHTML = `
+                    <img src="${imgUrl}" class="w-20 h-20 object-cover rounded-xl border border-slate-800 bg-slate-950 flex-shrink-0">
+                    <div class="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">${w.category || 'Watch'}</span>
+                                <span class="text-xs font-bold text-emerald-400">${valStr}</span>
+                            </div>
+                            <h3 class="text-sm font-bold text-white truncate">${w.brand || ''}</h3>
+                            <p class="text-xs text-slate-400 truncate">${w.model || ''}</p>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] text-slate-500 pt-1 border-t border-slate-800/60 mt-1">
+                            <span>Size: ${w.caseSize || 'N/A'}</span>
+                            <span>SN: ${w.serialNumber || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        function openModal(watchId) {
+            var modal = document.getElementById('watchModal');
+            var form = document.getElementById('watchForm');
+            form.reset();
+            currentTempImages = [];
+
+            if (watchId) {
+                document.getElementById('modalTitle').innerText = 'Edit Watch';
+                var w = watches.find(function(item) { return item.id === watchId; });
+                if (w) {
+                    document.getElementById('watchId').value = w.id;
+                    document.getElementById('brand').value = w.brand || '';
+                    document.getElementById('model').value = w.model || '';
+                    document.getElementById('category').value = w.category || 'Diver';
+                    document.getElementById('currentValue').value = w.currentValue || '';
+                    document.getElementById('movementType').value = w.movementType || '';
+                    document.getElementById('serialNumber').value = w.serialNumber || '';
+                    document.getElementById('caseSize').value = w.caseSize || '';
+                    document.getElementById('lugWidth').value = w.lugWidth || '';
+                    document.getElementById('crystalType').value = w.crystalType || '';
+                    document.getElementById('bandMaterial').value = w.bandMaterial || '';
+                    document.getElementById('waterResistance').value = w.waterResistance || '';
+                    document.getElementById('caseMaterial').value = w.caseMaterial || '';
+                    document.getElementById('purchaseDate').value = w.purchaseDate || '';
+                    document.getElementById('purchasePrice').value = w.purchasePrice || '';
+                    document.getElementById('askingPrice').value = w.askingPrice || '';
+                    document.getElementById('dateOfManufacture').value = w.dateOfManufacture || '';
+                    document.getElementById('description').value = w.description || '';
+                    currentTempImages = w.images ? [...w.images] : [];
+                }
+            } else {
+                document.getElementById('modalTitle').innerText = 'Add Watch';
+                document.getElementById('watchId').value = '';
+            }
+
+            renderTempImagePreviews();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
-        function compressImage(file, callback) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                var img = new Image();
-                img.onload = function () {
-                    var canvas = document.createElement('canvas');
-                    var maxWidth = 800;
-                    var maxHeight = 800;
-                    var width = img.width;
-                    var height = img.height;
-
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height *= maxWidth / width;
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width *= maxHeight / height;
-                            height = maxHeight;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    var compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    callback(compressedDataUrl);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        function closeModal() {
+            document.getElementById('watchModal').classList.add('hidden');
+            document.getElementById('watchModal').classList.remove('flex');
         }
 
         function handleImgs(e) {
             var files = e.target.files;
-            if (!files.length) return;
-            for (var i = 0; i < files.length; i++) {
-                compressImage(files[i], function(compressedResult) {
-                    currentTempImages.push(compressedResult);
+            if (!files) return;
+            Array.from(files).forEach(function(file) {
+                var reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentTempImages.push(evt.target.result);
                     renderTempImagePreviews();
-                });
-            }
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         function renderTempImagePreviews() {
             var container = document.getElementById('imagePreviewContainer');
-            if(!container) return;
-            container.innerHTML = currentTempImages.map(function(imgSrc, index) {
-                return '<div class="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-slate-700">' +
-                    '<img src="' + imgSrc + '" class="w-full h-full object-cover">' +
-                    '<button type="button" onclick="removeTempImage(' + index + ')" class="absolute top-0 right-0 bg-red-600 text-white w-4 h-4 rounded-bl flex items-center justify-center text-[10px] font-bold">&times;</button>' +
-                '</div>';
-            }).join('');
+            container.innerHTML = '';
+            currentTempImages.forEach(function(src, index) {
+                var div = document.createElement('div');
+                div.className = 'relative flex-shrink-0';
+                div.innerHTML = `
+                    <img src="${src}" class="w-14 h-14 object-cover rounded-xl border border-slate-700">
+                    <button type="button" onclick="removeTempImg(${index})" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">&times;</button>
+                `;
+                container.appendChild(div);
+            });
         }
 
-        function removeTempImage(index) {
-            currentTempImages.splice(index, 1);
+        function removeTempImg(idx) {
+            currentTempImages.splice(idx, 1);
             renderTempImagePreviews();
         }
-    </script>
-    <script>
-        function openDetailModal(id) {
-            var w = watches.find(function(item) { return item.id === id; });
-            if (!w) return;
 
-            document.getElementById('detTitle').innerText = (w.brand || '') + ' ' + (w.model || '');
-            document.getElementById('detVal').innerText = w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : '$0';
-            document.getElementById('detMovement').innerText = w.movementType || 'N/A';
-            document.getElementById('detSerial').innerText = w.serialNumber || 'N/A';
-            document.getElementById('detDesc').innerText = w.description || 'No notes provided.';
-
-            var specSec = document.getElementById('detSpecsSection');
-            var specsData = [
-                { label: 'Case Size', val: w.caseSize },
-                { label: 'Lug Width', val: w.lugWidth },
-                { label: 'Crystal', val: w.crystalType },
-                { label: 'Band Material', val: w.bandMaterial },
-                { label: 'Water Resistance', val: w.waterResistance },
-                { label: 'Case Material', val: w.caseMaterial },
-                { label: 'Purchase Date', val: w.purchaseDate },
-                { label: 'Purchase Price', val: w.purchasePrice ? '$' + Number(w.purchasePrice).toLocaleString() : null },
-                { label: 'Asking Price', val: w.askingPrice ? '$' + Number(w.askingPrice).toLocaleString() : null },
-                { label: 'Mfg Date', val: w.dateOfManufacture }
-            ].filter(function(s) { return s.val; });
-
-            if (specsData.length) {
-                specSec.innerHTML = '<h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 mt-3">Additional Specifications</h4>' +
-                    '<div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs">' +
-                    specsData.map(function(s) {
-                        return '<div><span class="text-slate-500 block uppercase text-[9px] font-bold">' + s.label + '</span><span class="text-slate-200">' + s.val + '</span></div>';
-                    }).join('') + '</div>';
-            } else {
-                specSec.innerHTML = '';
-            }
-
-            var imgContainer = document.getElementById('detImagesContainer');
-            if (w.images && w.images.length) {
-                imgContainer.innerHTML = w.images.map(function(img) {
-                    return '<img src="' + img + '" onclick="openLightbox(\'' + img + '\')" class="w-32 h-32 object-cover rounded-xl border border-slate-800 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity" title="Tap to enlarge">';
-                }).join('');
-                imgContainer.classList.remove('hidden');
-            } else {
-                imgContainer.innerHTML = '';
-                imgContainer.classList.add('hidden');
-            }
-
-            document.getElementById('detEditBtn').onclick = function() {
-                closeDetailModal();
-                editWatch(w.id);
-            };
-            document.getElementById('detShareBtn').onclick = function() {
-                closeDetailModal();
-                openShareModal(w.id);
-            };
-
-            document.getElementById('detailModal').classList.remove('hidden');
-            document.getElementById('detailModal').classList.add('flex');
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-            document.getElementById('detailModal').classList.remove('flex');
-        }
-
-        function openLightbox(imgSrc) {
-            document.getElementById('lightboxImg').src = imgSrc;
-            var box = document.getElementById('lightboxModal');
-            box.classList.remove('hidden');
-            box.classList.add('flex');
-        }
-
-        function closeLightbox() {
-            var box = document.getElementById('lightboxModal');
-            box.classList.add('hidden');
-            box.classList.remove('flex');
-        }
-
-        async function handleFormSubmit(e) {
+        function handleFormSubmit(e) {
             e.preventDefault();
-            
-            var fileInput = document.getElementById('imgs');
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                var filePromises = Array.from(fileInput.files).map(function(file) {
-                    return new Promise(function(resolve) {
-                        compressImage(file, function(compressed) {
-                            resolve(compressed);
-                        });
-                    });
-                });
-                var loadedImgs = await Promise.all(filePromises);
-                loadedImgs.forEach(function(img) {
-                    if (!currentTempImages.includes(img)) currentTempImages.push(img);
-                });
-            }
-
             var id = document.getElementById('watchId').value;
-
-            var watchData = {
-                id: id ? Number(id) : Date.now(),
+            
+            var watchObj = {
+                id: id ? parseInt(id) : Date.now(),
                 brand: document.getElementById('brand').value,
                 model: document.getElementById('model').value,
                 category: document.getElementById('category').value,
@@ -456,95 +422,87 @@
             };
 
             if (id) {
-                var idx = watches.findIndex(function(w) { return w.id === Number(id); });
-                if (idx !== -1) watches[idx] = watchData;
+                var index = watches.findIndex(function(w) { return w.id === parseInt(id); });
+                if (index !== -1) watches[index] = watchObj;
             } else {
-                watches.push(watchData);
+                watches.push(watchObj);
             }
 
-            try {
-                localStorage.setItem('watches_v15', JSON.stringify(watches));
-            } catch (err) {
-                alert("Storage limit reached! Try exporting a backup file to free up space.");
-                return;
-            }
-
+            saveWatches();
             closeModal();
-            render();
         }
-
-        function editWatch(id) {
+        function openDetailModal(id) {
             var w = watches.find(function(item) { return item.id === id; });
             if (!w) return;
-            document.getElementById('modalTitle').innerText = 'Edit Watch';
-            document.getElementById('watchId').value = w.id;
-            document.getElementById('brand').value = w.brand || '';
-            document.getElementById('model').value = w.model || '';
-            document.getElementById('category').value = w.category || 'Diver';
-            document.getElementById('currentValue').value = w.currentValue || '';
-            document.getElementById('movementType').value = w.movementType || '';
-            document.getElementById('serialNumber').value = w.serialNumber || '';
-            document.getElementById('caseSize').value = w.caseSize || '';
-            document.getElementById('lugWidth').value = w.lugWidth || '';
-            document.getElementById('crystalType').value = w.crystalType || '';
-            document.getElementById('bandMaterial').value = w.bandMaterial || '';
-            document.getElementById('waterResistance').value = w.waterResistance || '';
-            document.getElementById('caseMaterial').value = w.caseMaterial || '';
-            document.getElementById('purchaseDate').value = w.purchaseDate || '';
-            document.getElementById('purchasePrice').value = w.purchasePrice || '';
-            document.getElementById('askingPrice').value = w.askingPrice || '';
-            document.getElementById('dateOfManufacture').value = w.dateOfManufacture || '';
-            document.getElementById('description').value = w.description || '';
 
-            currentTempImages = w.images ? [...w.images] : [];
-            renderTempImagePreviews();
+            document.getElementById('detTitle').innerText = (w.brand || '') + ' ' + (w.model || '');
+            document.getElementById('detVal').innerText = w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : 'N/A';
+            document.getElementById('detMovement').innerText = w.movementType || 'N/A';
+            document.getElementById('detSerial').innerText = w.serialNumber || 'N/A';
+            document.getElementById('detDesc').innerText = w.description || 'No notes provided.';
 
-            document.getElementById('watchModal').classList.remove('hidden');
-            document.getElementById('watchModal').classList.add('flex');
-        }
-
-        function deleteWatch(id) {
-            if (confirm("Delete this watch record?")) {
-                watches = watches.filter(function(w) { return w.id !== id; });
-                localStorage.setItem('watches_v15', JSON.stringify(watches));
-                render();
+            var imgContainer = document.getElementById('detImagesContainer');
+            imgContainer.innerHTML = '';
+            if (w.images && w.images.length > 0) {
+                w.images.forEach(function(src) {
+                    var img = document.createElement('img');
+                    img.src = src;
+                    img.className = 'w-24 h-24 object-cover rounded-xl border border-slate-800 cursor-pointer flex-shrink-0';
+                    img.onclick = function() { openLightbox(src); };
+                    imgContainer.appendChild(img);
+                });
+            } else {
+                imgContainer.innerHTML = '<div class="text-xs text-slate-500 italic p-2">No images available</div>';
             }
+
+            var specsBox = document.getElementById('detSpecsSection');
+            specsBox.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 text-xs text-slate-300 bg-slate-950 p-3 rounded-2xl border border-slate-800/80">
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Case Size</span>${w.caseSize || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Lug Width</span>${w.lugWidth || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Crystal</span>${w.crystalType || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Water Resistance</span>${w.waterResistance || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Band Material</span>${w.bandMaterial || 'N/A'}</div>
+                    <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Case Material</span>${w.caseMaterial || 'N/A'}</div>
+                </div>
+            `;
+
+            document.getElementById('detEditBtn').onclick = function() {
+                closeDetailModal();
+                openModal(w.id);
+            };
+
+            document.getElementById('detShareBtn').onclick = function() {
+                openShareModal(w.id);
+            };
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.getElementById('detailModal').classList.add('flex');
         }
-    </script>
-    <script>
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxModal').classList.remove('hidden');
+            document.getElementById('lightboxModal').classList.add('flex');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightboxModal').classList.add('hidden');
+            document.getElementById('lightboxModal').classList.remove('flex');
+        }
+
         function openShareModal(id) {
             activeShareWatchId = id;
             var w = watches.find(function(item) { return item.id === id; });
-            if (!w) return;
-
             var box = document.getElementById('shareOptionsBox');
-            var html = '';
-            var items = [
-                { id: 'sb_brand', label: 'Watch Name', val: (w.brand || '') + ' ' + (w.model || ''), def: true },
-                { id: 'sb_cat', label: 'Category', val: w.category, def: true },
-                { id: 'sb_val', label: 'Estimated Value', val: '$' + (w.currentValue || 'N/A'), def: true },
-                { id: 'sb_mov', label: 'Movement', val: w.movementType, def: true },
-                { id: 'sb_sn', label: 'Serial No.', val: w.serialNumber, def: false },
-                { id: 'sb_desc', label: 'Notes', val: w.description, def: false },
-                { id: 'sb_case', label: 'Case Size', val: w.caseSize, def: false },
-                { id: 'sb_lug', label: 'Lug Width', val: w.lugWidth, def: false },
-                { id: 'sb_crys', label: 'Crystal', val: w.crystalType, def: false },
-                { id: 'sb_band', label: 'Band Material', val: w.bandMaterial, def: false },
-                { id: 'sb_wr', label: 'Water Resistance', val: w.waterResistance, def: false },
-                { id: 'sb_cm', label: 'Case Material', val: w.caseMaterial, def: false },
-                { id: 'sb_pprice', label: 'Purchase Price', val: w.purchasePrice ? '$' + Number(w.purchasePrice).toLocaleString() : null, def: false },
-                { id: 'sb_pdate', label: 'Purchase Date', val: w.purchaseDate, def: false },
-                { id: 'sb_aprice', label: 'Asking Price', val: w.askingPrice ? '$' + Number(w.askingPrice).toLocaleString() : null, def: false },
-                { id: 'sb_mfg', label: 'Mfg Date', val: w.dateOfManufacture, def: false }
-            ];
-
-            items.forEach(function(item) {
-                if (item.val && item.val !== '$N/A' && item.val !== 'N/A') {
-                    html += '<label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="' + item.id + '" ' + (item.def ? 'checked' : '') + ' class="rounded accent-indigo-600"><span>' + item.label + ': ' + item.val + '</span></label>';
-                }
-            });
-
-            box.innerHTML = html;
+            if (w) {
+                box.innerHTML = `<p class="font-bold text-white">${w.brand} ${w.model}</p><p class="text-[11px] text-slate-400">Ready to export spec sheet or share details.</p>`;
+            }
             document.getElementById('shareModal').classList.remove('hidden');
             document.getElementById('shareModal').classList.add('flex');
         }
@@ -554,93 +512,57 @@
             document.getElementById('shareModal').classList.remove('flex');
         }
 
-        function buildShareTextPayload() {
-            var w = watches.find(function(item) { return item.id === activeShareWatchId; });
-            if (!w) return '';
-            var txt = "⌚ Watch Details Report\n";
-            if (document.getElementById('sb_brand') && document.getElementById('sb_brand').checked) txt += "Watch: " + (w.brand || '') + " " + (w.model || '') + "\n";
-            if (document.getElementById('sb_cat') && document.getElementById('sb_cat').checked) txt += "Category: " + (w.category || '') + "\n";
-            if (document.getElementById('sb_val') && document.getElementById('sb_val').checked) txt += "Est. Value: $" + (w.currentValue || 'N/A') + "\n";
-            if (document.getElementById('sb_mov') && document.getElementById('sb_mov').checked) txt += "Movement: " + (w.movementType || 'N/A') + "\n";
-            if (document.getElementById('sb_sn') && document.getElementById('sb_sn').checked) txt += "Serial: " + (w.serialNumber || 'N/A') + "\n";
-            if (document.getElementById('sb_desc') && document.getElementById('sb_desc').checked) txt += "Notes: " + (w.description || 'None') + "\n";
-            if (document.getElementById('sb_case') && document.getElementById('sb_case').checked) txt += "Case Size: " + (w.caseSize || 'N/A') + "\n";
-            if (document.getElementById('sb_lug') && document.getElementById('sb_lug').checked) txt += "Lug Width: " + (w.lugWidth || 'N/A') + "\n";
-            if (document.getElementById('sb_crys') && document.getElementById('sb_crys').checked) txt += "Crystal: " + (w.crystalType || 'N/A') + "\n";
-            if (document.getElementById('sb_band') && document.getElementById('sb_band').checked) txt += "Band Material: " + (w.bandMaterial || 'N/A') + "\n";
-            if (document.getElementById('sb_wr') && document.getElementById('sb_wr').checked) txt += "Water Resistance: " + (w.waterResistance || 'N/A') + "\n";
-            if (document.getElementById('sb_cm') && document.getElementById('sb_cm').checked) txt += "Case Material: " + (w.caseMaterial || 'N/A') + "\n";
-            if (document.getElementById('sb_pprice') && document.getElementById('sb_pprice').checked) txt += "Purchase Price: $" + (w.purchasePrice || 'N/A') + "\n";
-            if (document.getElementById('sb_pdate') && document.getElementById('sb_pdate').checked) txt += "Purchase Date: " + (w.purchaseDate || 'N/A') + "\n";
-            if (document.getElementById('sb_aprice') && document.getElementById('sb_aprice').checked) txt += "Asking Price: $" + (w.askingPrice || 'N/A') + "\n";
-            if (document.getElementById('sb_mfg') && document.getElementById('sb_mfg').checked) txt += "Mfg Date: " + (w.dateOfManufacture || 'N/A') + "\n";
-
-            return txt;
-        }
-
         function executeShareText() {
             var w = watches.find(function(item) { return item.id === activeShareWatchId; });
-            var txt = buildShareTextPayload();
-            closeShareModal();
-            if (navigator.share) navigator.share({ title: (w.brand || '') + " " + (w.model || ''), text: txt });
-            else prompt("Copy report to share:", txt);
+            if (!w) return;
+            var text = `${w.brand} ${w.model}\nValue: $${w.currentValue}\nSerial: ${w.serialNumber}\nMovement: ${w.movementType}`;
+            if (navigator.share) {
+                navigator.share({ title: w.brand + ' ' + w.model, text: text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Watch summary copied to clipboard!');
+            }
         }
 
         function executeEmailReport() {
             var w = watches.find(function(item) { return item.id === activeShareWatchId; });
-            var txt = buildShareTextPayload();
-            closeShareModal();
-            window.location.href = "mailto:?subject=" + encodeURIComponent("Watch Specification: " + (w.brand || '') + " " + (w.model || '')) + "&body=" + encodeURIComponent(txt);
+            if (!w) return;
+            var subject = encodeURIComponent(`Watch Details: ${w.brand} ${w.model}`);
+            var body = encodeURIComponent(`Brand: ${w.brand}\nModel: ${w.model}\nSerial: ${w.serialNumber}\nEst Value: $${w.currentValue}\nCategory: ${w.category}\nCase Size: ${w.caseSize}\nNotes: ${w.description}`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
         function executeGeneratePDF() {
             var w = watches.find(function(item) { return item.id === activeShareWatchId; });
             if (!w) return;
-
-            var pdfHtml = '<div style="font-family:sans-serif; padding:20px; max-width:600px; margin:auto;">' +
-                '<h1 style="border-bottom:2px solid #cbd5e1; padding-bottom:8px; color:#0f172a;">Watch Vault Record Report</h1>' +
-                '<h2 style="color:#475569; margin-top:16px;">' + (w.brand || '') + ' ' + (w.model || '') + '</h2>' +
-                '<p><strong>Category:</strong> ' + (w.category || 'N/A') + '</p>' +
-                '<p><strong>Estimated Value:</strong> $' + (w.currentValue || 'N/A') + '</p>' +
-                '<p><strong>Movement:</strong> ' + (w.movementType || 'N/A') + '</p>' +
-                '<p><strong>Serial Number:</strong> ' + (w.serialNumber || 'N/A') + '</p>' +
-                '<p><strong>Case Size:</strong> ' + (w.caseSize || 'N/A') + '</p>' +
-                '<p><strong>Lug Width:</strong> ' + (w.lugWidth || 'N/A') + '</p>' +
-                '<p><strong>Crystal Type:</strong> ' + (w.crystalType || 'N/A') + '</p>' +
-                '<p><strong>Band Material:</strong> ' + (w.bandMaterial || 'N/A') + '</p>' +
-                '<p><strong>Water Resistance:</strong> ' + (w.waterResistance || 'N/A') + '</p>' +
-                '<p><strong>Case Material:</strong> ' + (w.caseMaterial || 'N/A') + '</p>' +
-                '<p><strong>Purchase Price:</strong> $' + (w.purchasePrice || 'N/A') + '</p>' +
-                '<p><strong>Purchase Date:</strong> ' + (w.purchaseDate || 'N/A') + '</p>' +
-                '<p><strong>Asking Price:</strong> $' + (w.askingPrice || 'N/A') + '</p>' +
-                '<p><strong>Mfg Date / Year:</strong> ' + (w.dateOfManufacture || 'N/A') + '</p>' +
-                '<p><strong>Notes:</strong> ' + (w.description || 'N/A') + '</p>';
-
-            if (w.images && w.images.length) {
-                pdfHtml += '<h3>Attached Photos</h3><div style="display:flex; flex-wrap:wrap; gap:10px;">';
-                w.images.forEach(function(img) {
-                    pdfHtml += '<img src="' + img + '" style="width:180px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1;">';
-                });
-                pdfHtml += '</div>';
-            }
-            pdfHtml += '</div>';
-
-            closeShareModal();
-            var win = window.open('', '', 'width=700,height=700');
-            win.document.write('<html><head><title>Watch Report</title></head><body>' + pdfHtml + '</body></html>');
-            win.document.close();
-            win.focus();
-            setTimeout(function() { win.print(); }, 500);
+            var printWin = window.open('', '_blank');
+            printWin.document.write(`
+                <html>
+                <head><title>${w.brand} ${w.model} - Spec Sheet</title></head>
+                <body style="font-family: sans-serif; padding: 20px;">
+                    <h1>${w.brand} ${w.model}</h1>
+                    <hr>
+                    <p><strong>Category:</strong> ${w.category}</p>
+                    <p><strong>Estimated Value:</strong> $${w.currentValue}</p>
+                    <p><strong>Serial Number:</strong> ${w.serialNumber}</p>
+                    <p><strong>Movement:</strong> ${w.movementType}</p>
+                    <p><strong>Case Size:</strong> ${w.caseSize} | <strong>Lug Width:</strong> ${w.lugWidth}</p>
+                    <p><strong>Notes:</strong> ${w.description}</p>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+            printWin.print();
         }
 
         function exportBackup() {
-            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(watches));
-            var dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", "watch_vault_backup_" + new Date().toISOString().slice(0, 10) + ".json");
-            document.body.appendChild(dl);
-            dl.click();
-            dl.remove();
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(watches, null, 2));
+            var dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `watch_vault_backup_${Date.now()}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
         }
 
         function importBackup(e) {
@@ -649,56 +571,21 @@
             var reader = new FileReader();
             reader.onload = function(evt) {
                 try {
-                    var parsed = JSON.parse(evt.target.result);
-                    if (Array.isArray(parsed)) {
-                        if (confirm("Restore " + parsed.length + " watches into your collection?")) {
-                            watches = parsed;
-                            localStorage.setItem('watches_v15', JSON.stringify(watches));
-                            render();
-                            alert("Backup restored!");
-                        }
+                    var imported = JSON.parse(evt.target.result);
+                    if (Array.isArray(imported)) {
+                        watches = imported;
+                        saveWatches();
+                        alert('Backup successfully restored!');
                     }
-                } catch (err) { alert("Invalid backup file format."); }
+                } catch(err) {
+                    alert('Invalid JSON backup file');
+                }
             };
             reader.readAsText(file);
         }
 
-        function render() {
-            var list = document.getElementById('watchList');
-            if (!list) return;
-
-            var filtered = activeCategoryFilter === 'All' ? watches : watches.filter(function(w) { return w.category === activeCategoryFilter; });
-
-            if (!filtered || !filtered.length) {
-                list.innerHTML = '<div class="text-center py-12 text-slate-500 text-xs font-medium bg-slate-900 border border-slate-800 rounded-2xl">No watches found in this category.</div>';
-                return;
-            }
-
-            list.innerHTML = filtered.map(function(w) {
-                var imgCover = (w.images && w.images.length) ? '<img src="' + w.images[0] + '" class="w-full h-44 object-cover cursor-pointer" onclick="openDetailModal(' + w.id + ')">' : '';
-
-                return '<div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg transition-all hover:border-slate-700">' +
-                    imgCover +
-                    '<div class="p-4 space-y-2 cursor-pointer" onclick="openDetailModal(' + w.id + ')">' +
-                        '<div class="flex justify-between items-center">' +
-                            '<span class="bg-indigo-950/80 text-indigo-300 text-[10px] font-bold px-2.5 py-1 rounded-full border border-indigo-800/50">' + (w.category || 'General') + '</span>' +
-                            '<span class="text-emerald-400 font-bold text-sm">' + (w.currentValue ? '$' + Number(w.currentValue).toLocaleString() : '$0') + '</span>' +
-                        '</div>' +
-                        '<h3 class="text-base font-bold text-white hover:text-indigo-400">' + (w.brand || '') + ' ' + (w.model || '') + '</h3>' +
-                        '<p class="text-xs text-slate-400 leading-relaxed line-clamp-2">' + (w.description || 'No description provided.') + '</p>' +
-                    '</div>' +
-                    '<div class="flex justify-between items-center px-4 pb-4 pt-2 border-t border-slate-800/80">' +
-                        '<div class="flex gap-1.5">' +
-                            '<button onclick="editWatch(' + w.id + ')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">Edit</button>' +
-                            '<button onclick="openShareModal(' + w.id + ')" class="bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-800/50 transition-all">Share / PDF</button>' +
-                        '</div>' +
-                        '<button onclick="deleteWatch(' + w.id + ')" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all">Delete</button>' +
-                    '</div>' +
-                '</div>';
-            }).join('');
-        }
-
-        render();
+        // Initialize display on startup
+        renderWatches();
     </script>
 </body>
 </html>
