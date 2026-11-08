@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Vault Tracker</title>
+    <title>Watch Vault</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -30,12 +30,12 @@
             border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
-        /* Top Action Pill Bar */
+        /* Slim Top Action Pill Bar */
         .top-nav-bar {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 6px 24px rgba(45, 65, 50, 0.08);
+            box-shadow: 0 4px 18px rgba(45, 65, 50, 0.07);
         }
 
         .floating-add-btn {
@@ -45,38 +45,40 @@
     </style>
 </head>
 <body class="pb-12 font-sans antialiased">
-    <div class="max-w-md mx-auto px-4 pt-4 space-y-4">
+    <div class="max-w-md mx-auto px-4 pt-4 space-y-3">
 
-        <!-- Header Title -->
-        <div class="flex items-center justify-between px-2 pt-2">
-            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <span>⌚</span> Watch Vault Tracker
+        <!-- Upper Header: Title Left + Small Portfolio Pill Right -->
+        <div class="flex items-center justify-between px-1 pt-1">
+            <h1 class="text-xl font-bold text-slate-900 flex items-center gap-1.5">
+                <span>⌚</span> Watch Vault
             </h1>
+            <div class="glass-watch-card px-3 py-1 rounded-full text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-sm">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Value:</span>
+                <span id="headerTotalVal" class="font-extrabold text-emerald-900">$0</span>
+            </div>
         </div>
 
-        <!-- Top Pill Bar: Left (Backup), Middle (+ Add Watch), Right (Restore) -->
-        <div class="top-nav-bar relative flex items-center justify-between py-2 px-5 rounded-full z-20">
-            <!-- Left: Backup -->
-            <button onclick="exportBackup()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1">
+        <!-- Add Watch Action Floating Above Slim Pill Bar -->
+        <div class="flex flex-col items-center pt-1 -mb-3 z-30 relative">
+            <button onclick="openModal()" class="floating-add-btn w-11 h-11 rounded-full text-white font-bold text-xl flex items-center justify-center active:scale-95 transition-all">
+                +
+            </button>
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-emerald-900 mt-0.5 bg-white/60 px-2 py-0.5 rounded-full backdrop-blur-sm">Add Watch</span>
+        </div>
+
+        <!-- Slim Top Action Pill Bar: Backup Left & Restore Right -->
+        <div class="top-nav-bar relative flex items-center justify-between py-2 px-6 rounded-full z-20">
+            <button onclick="exportBackup()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1 active:scale-95 transition-all">
                 <span>📥</span> Backup
             </button>
 
-            <!-- Center: Labeled + Add Watch Circular Button -->
-            <div class="flex flex-col items-center -mt-4">
-                <button onclick="openModal()" class="floating-add-btn w-12 h-12 rounded-full text-white font-bold text-2xl flex items-center justify-center active:scale-95 transition-all">
-                    +
-                </button>
-                <span class="text-[9px] font-extrabold uppercase tracking-wider text-emerald-900 mt-0.5">Add Watch</span>
-            </div>
-
-            <!-- Right: Restore -->
-            <button onclick="document.getElementById('importFile').click()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1">
+            <button onclick="document.getElementById('importFile').click()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1 active:scale-95 transition-all">
                 <span>📤</span> Restore
             </button>
             <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
         </div>
 
-        <!-- Swipeable Category Pill Bar Below Top Bar -->
+        <!-- Swipeable Category Pill Bar -->
         <div class="flex gap-2 overflow-x-auto no-scrollbar py-1" id="catFilters">
             <button onclick="setFilter('All', this)" class="filter-btn active floating-add-btn text-white text-xs font-semibold px-4 py-2 rounded-full whitespace-nowrap shadow-sm transition-all">All</button>
             <button onclick="setFilter('Diver', this)" class="filter-btn glass-watch-card text-slate-700 hover:text-slate-900 text-xs font-semibold px-4 py-2 rounded-full whitespace-nowrap transition-all">Diver</button>
@@ -92,7 +94,7 @@
             <span class="absolute left-3.5 top-3.5 text-slate-400 text-xs">🔍</span>
         </div>
 
-        <!-- Watch List Container -->
+        <!-- Watch Cards Container -->
         <div id="watchList" class="space-y-3 pt-1"></div>
     </div>
     <!-- Add / Edit Watch Modal -->
@@ -217,7 +219,7 @@
                 <h2 id="detTitle" class="text-lg font-bold text-slate-900 tracking-wide"></h2>
             </div>
 
-            <!-- Top Grid Layout: Est Value & Purchase Price -->
+            <!-- Top Summary Grid: Est Value & Purchase Price -->
             <div class="grid grid-cols-2 gap-2 glass-inner p-3 rounded-2xl text-xs">
                 <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Estimated Value</span><span id="detVal" class="text-emerald-800 font-bold text-base"></span></div>
                 <div><span class="text-slate-500 block uppercase text-[9px] font-bold">Purchase Price</span><span id="detPurchase" class="text-slate-700 font-bold text-base"></span></div>
@@ -301,6 +303,17 @@
             renderWatches();
         }
 
+        function updateHeaderTotal() {
+            var total = watches.reduce(function(acc, item) {
+                var val = parseFloat(item.currentValue) || 0;
+                return acc + val;
+            }, 0);
+            var totalEl = document.getElementById('headerTotalVal');
+            if (totalEl) {
+                totalEl.innerText = '$' + total.toLocaleString('en-US');
+            }
+        }
+
         function setFilter(category, element) {
             activeCategoryFilter = category;
             document.querySelectorAll('.filter-btn').forEach(function(btn) {
@@ -310,6 +323,8 @@
             renderWatches();
         }
         function renderWatches() {
+            updateHeaderTotal();
+
             var container = document.getElementById('watchList');
             container.innerHTML = '';
 
@@ -497,7 +512,7 @@
                 imgContainer.innerHTML = '<div class="text-xs text-slate-500 italic p-2">No images available</div>';
             }
 
-            // Specs section with Movement and Serial Number
+            // Specs grid: Movement & Serial Number included
             var specsBox = document.getElementById('detSpecsSection');
             specsBox.innerHTML = `
                 <div class="grid grid-cols-2 gap-2 text-xs text-slate-700 glass-inner p-3 rounded-2xl">
