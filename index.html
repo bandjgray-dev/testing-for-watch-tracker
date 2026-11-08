@@ -54,22 +54,21 @@
                 <span id="headerTotalVal" class="font-extrabold text-emerald-900">$0</span>
             </div>
         </div>
-
-        <!-- Add Watch Label Above & Button Partially Recessed Inside the Pill Bar -->
-        <div class="relative pt-3">
-            <div class="absolute -top-1 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
-                <span class="text-[9px] font-extrabold uppercase tracking-wider text-emerald-900 bg-white/80 px-2 py-0.5 rounded-full backdrop-blur-sm shadow-sm mb-0.5">Add Watch</span>
+        <!-- Add Watch Label Above & Button Protruding Top of Pill Bar -->
+        <div class="relative pt-4 pb-1">
+            <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
+                <span class="text-[10px] font-extrabold tracking-wider text-emerald-900 mb-0.5">Add Watch</span>
                 <button onclick="openModal()" class="floating-add-btn w-12 h-12 rounded-full text-white font-bold text-2xl flex items-center justify-center active:scale-95 transition-all">
                     +
                 </button>
             </div>
 
-            <!-- Top Action Pill Bar (Backup Left & Restore Right) -->
+            <!-- Top Action Pill Bar (Backup Left & Restore Right) with Central Notch Gap -->
             <div class="top-nav-bar relative flex items-center justify-between py-2.5 px-6 rounded-full z-20">
                 <button onclick="exportBackup()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1 active:scale-95 transition-all">
                     <span>📥</span> Backup
                 </button>
-
+                <div class="w-10"></div> <!-- Spacer for center protruding button -->
                 <button onclick="document.getElementById('importFile').click()" class="text-xs font-bold text-slate-700 hover:text-emerald-900 flex items-center gap-1 active:scale-95 transition-all">
                     <span>📤</span> Restore
                 </button>
@@ -369,6 +368,7 @@
                 container.appendChild(card);
             });
         }
+
         function openModal(watchId) {
             var modal = document.getElementById('watchModal');
             var form = document.getElementById('watchForm');
