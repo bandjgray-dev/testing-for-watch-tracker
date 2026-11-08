@@ -15,7 +15,6 @@
             min-height: 100vh;
         }
 
-        /* Enhanced bottom-focused shadowing for watch cards and pill elements */
         .glass-watch-card {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(16px);
@@ -29,13 +28,14 @@
             border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
+        /* Pill bar notch masking with perfectly rounded contour radius */
         .top-nav-bar {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.95);
             box-shadow: 0 12px 30px -4px rgba(45, 65, 50, 0.12);
-            mask-image: radial-gradient(circle 28px at 50% 0px, transparent 100%, black 101%);
-            -webkit-mask-image: radial-gradient(circle 28px at 50% 0px, transparent 100%, black 101%);
+            mask-image: radial-gradient(circle 26px at 50% 0px, transparent 26px, black 27px);
+            -webkit-mask-image: radial-gradient(circle 26px at 50% 0px, transparent 26px, black 27px);
         }
 
         .floating-add-btn {
@@ -621,7 +621,7 @@
                     <hr>
                     <p><strong>Category:</strong> ${w.category}</p>
                     <p><strong>Estimated Value:</strong> $${w.currentValue}</p>
-                    <p><strong>Purchase Price:</strong> $${w.purchasePrice}</p>
+                    <p><strong>Purchase Price:</strong> ${w.purchasePrice}</p>
                     <p><strong>Serial Number:</strong> ${w.serialNumber}</p>
                     <p><strong>Movement:</strong> ${w.movementType}</p>
                     <p><strong>Case Size:</strong> ${w.caseSize} | <strong>Lug Width:</strong> ${w.lugWidth}</p>
